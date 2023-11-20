@@ -1,0 +1,75 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8081:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  app1:
+    image: "crccheck/hello-world"
+    container_name: "app-hello-world"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.app1.rule: "Host(`test.domaine.localhost`) && Path(`/app1`)"
+      traefik.http.routers.app1.entrypoints: web
+      traefik.http.routers.app1.service: "service-app1"
+      traefik.http.routers.app1.middlewares: "redirect-app1"
+
+      traefik.http.services.service-app1.loadbalancer.server.url: "localhost:8091"
+      traefik.http.services.service-app1.loadbalancer.server.port: 8091
+      
+      traefik.http.middlewares.redirect-app1.redirectregex.regex: "test.domaine.localhost/app1"
+      traefik.http.middlewares.redirect-app1.redirectregex.replacement: "localhost:8091"
+      traefik.http.middlewares.redirect-app1.redirectregex.permanent: "false"
+    ports:
+      - "8091:8000"
+      
+  app2:
+    image: "traefik/whoami"
+    container_name: "app-whoami"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.app2.rule: "Host(`test.domaine.localhost`) && Path(`/app2`)"
+      traefik.http.routers.app2.entrypoints: web
+      traefik.http.routers.app2.service: "service-app2"
+      traefik.http.routers.app2.middlewares: "redirect-app2"
+
+      traefik.http.services.service-app2.loadbalancer.server.url: "localhost:8092"
+      traefik.http.services.service-app2.loadbalancer.server.port: 8092
+      
+      traefik.http.middlewares.redirect-app2.redirectregex.regex: "test.domaine.localhost/app2"
+      traefik.http.middlewares.redirect-app2.redirectregex.replacement: "localhost:8092"
+      traefik.http.middlewares.redirect-app2.redirectregex.permanent: "false"
+    ports:
+      - "8092:80"
+
+  app3:
+    image: "strm/helloworld-http"
+    container_name: "app-hello-world-http"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.app3.rule: "Host(`test.domaine.localhost`) && Path(`/app3`)"
+      traefik.http.routers.app3.entrypoints: web
+      traefik.http.routers.app3.service: "service-app3"
+      traefik.http.routers.app3.middlewares: "redirect-app3"
+
+      traefik.http.services.service-app3.loadbalancer.server.url: "localhost:8093"
+      traefik.http.services.service-app3.loadbalancer.server.port: 8093
+
+      traefik.http.middlewares.redirect-app3.redirectregex.regex: "test.domaine.localhost/app3"
+      traefik.http.middlewares.redirect-app3.redirectregex.replacement: "localhost:8093"
+      traefik.http.middlewares.redirect-app3.redirectregex.permanent: "false"
+    ports:
+      - "8093:80"
