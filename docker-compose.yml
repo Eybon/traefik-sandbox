@@ -18,8 +18,8 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   app1:
-    image: "crccheck/hello-world"
-    container_name: "app-hello-world"
+    image: ghcr.io/eybon/basic-http-hello-world:armv7"
+    container_name: "basic-http-hello-world"
     labels:
       traefik.enable: true
       traefik.http.routers.app1.rule: "Host(`test.domaine.localhost`) && Path(`/app1`)"
@@ -34,7 +34,7 @@ services:
       traefik.http.middlewares.redirect-app1.redirectregex.replacement: "localhost:8091"
       traefik.http.middlewares.redirect-app1.redirectregex.permanent: "false"
     ports:
-      - "8091:8000"
+      - "8091:8080"
       
   app2:
     image: "traefik/whoami"
